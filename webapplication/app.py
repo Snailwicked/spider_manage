@@ -157,5 +157,4 @@ if __name__ == '__main__':
     if not os.path.exists(database_path):
         build_sample_db()
 
-    # Start app
     app.run(debug=True)
