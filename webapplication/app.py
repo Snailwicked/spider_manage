@@ -1,104 +1,68 @@
 import os
-from flask import Flask, url_for, redirect, render_template, request, abort
+import os.path as op
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
-from flask_security.utils import encrypt_password
-import flask_admin
-from flask_admin.contrib import sqla
-from flask_admin import helpers as admin_helpers
+
+import flask_admin as admin
+from flask_admin.contrib.sqla import ModelView
 
 
-# Create Flask application
+# Create application
 app = Flask(__name__)
-app.config.from_pyfile('config.py')
+
+# Create dummy secrey key so we can use sessions
+app.config['SECRET_KEY'] = '123456790'
+
+# Create in-memory database
+app.config['DATABASE_FILE'] = 'sample_db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DATABASE_FILE']
+app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
 
-# Define models
-roles_users = db.Table(
-    'roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
-)
+# Models
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode(64))
+    email = db.Column(db.Unicode(64))
 
-
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 
-class User(db.Model, UserMixin):
+class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
+    title = db.Column(db.Unicode(64))
+    content = db.Column(db.UnicodeText)
 
-    def __str__(self):
-        return self.email
+    def __unicode__(self):
+        return self.name
 
 
-# Setup Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
+# Customized admin interface
+class CustomView(ModelView):
+    list_template = 'list.html'
+    create_template = 'create.html'
+    edit_template = 'edit.html'
 
 
-# Create customized model view class
-class MyModelView(sqla.ModelView):
-    def is_accessible(self):
-        return (current_user.is_active and
-                current_user.is_authenticated and
-                current_user.has_role('superuser')
-        )
+class UserAdmin(CustomView):
+    column_searchable_list = ('name',)
+    column_filters = ('name', 'email')
 
-    def _handle_view(self, name, **kwargs):
-        """
-        Override builtin _handle_view in order to redirect users when a view is not accessible.
-        """
-        if not self.is_accessible():
-            if current_user.is_authenticated:
-                # permission denied
-                abort(403)
-            else:
-                # login
-                return redirect(url_for('security.login', next=request.url))
 
 # Flask views
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return '<a href="/admin/">Click me to get to Admin!</a>'
 
-# Create admin
-admin = flask_admin.Admin(
-    app,
-    'Example: Auth',
-    base_template='my_master.html',
-    template_mode='bootstrap3',
-)
 
-# Add model views
-admin.add_view(MyModelView(Role, db.session))
-admin.add_view(MyModelView(User, db.session))
+# Create admin with custom base template
+admin = admin.Admin(app, 'Example: Layout-BS3', base_template='layout.html', template_mode='bootstrap3')
 
-# define a context processor for merging flask-admin's template context into the
-# flask-security views.
-@security.context_processor
-def security_context_processor():
-    return dict(
-        admin_base_template=admin.base_template,
-        admin_view=admin.index_view,
-        h=admin_helpers,
-        get_url=url_for
-    )
+# Add views
+admin.add_view(UserAdmin(User, db.session))
+admin.add_view(CustomView(Page, db.session))
 
 
 def build_sample_db():
@@ -106,55 +70,80 @@ def build_sample_db():
     Populate a small db with some example entries.
     """
 
-    import string
-    import random
-
     db.drop_all()
     db.create_all()
 
-    with app.app_context():
-        user_role = Role(name='user')
-        super_user_role = Role(name='superuser')
-        db.session.add(user_role)
-        db.session.add(super_user_role)
-        db.session.commit()
+    first_names = [
+        'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie','Sophie', 'Mia',
+        'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
+        'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
+    ]
+    last_names = [
+        'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
+        'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
+        'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
+    ]
 
-        test_user = user_datastore.create_user(
-            first_name='Admin',
-            email='admin',
-            password=encrypt_password('admin'),
-            roles=[user_role, super_user_role]
-        )
+    for i in range(len(first_names)):
+        user = User()
+        user.name = first_names[i] + " " + last_names[i]
+        user.email = first_names[i].lower() + "@example.com"
+        db.session.add(user)
 
-        first_names = [
-            'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
-            'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
-            'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
-        ]
-        last_names = [
-            'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
-            'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
-            'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
-        ]
+    sample_text = [
+        {
+            'title': "de Finibus Bonorum et Malorum - Part I",
+            'content': "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor \
+                        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+                        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
+                        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
+                        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt \
+                        mollit anim id est laborum."
+        },
+        {
+            'title': "de Finibus Bonorum et Malorum - Part II",
+            'content': "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque \
+                        laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto \
+                        beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur \
+                        aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi \
+                        nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, \
+                        adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam \
+                        aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam \
+                        corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum \
+                        iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum \
+                        qui dolorem eum fugiat quo voluptas nulla pariatur?"
+        },
+        {
+            'title': "de Finibus Bonorum et Malorum - Part III",
+            'content': "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium \
+                        voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati \
+                        cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id \
+                        est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam \
+                        libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod \
+                        maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. \
+                        Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet \
+                        ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur \
+                        a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis \
+                        doloribus asperiores repellat."
+        }
+    ]
 
-        for i in range(len(first_names)):
-            tmp_email = first_names[i].lower() + "." + last_names[i].lower() + "@example.com"
-            tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
-            user_datastore.create_user(
-                first_name=first_names[i],
-                last_name=last_names[i],
-                email=tmp_email,
-                password=encrypt_password(tmp_pass),
-                roles=[user_role, ]
-            )
-        db.session.commit()
+    for entry in sample_text:
+        page = Page()
+        page.title = entry['title']
+        page.content = entry['content']
+        db.session.add(page)
+
+    db.session.commit()
     return
 
 if __name__ == '__main__':
 
-    app_dir = os.path.realpath(os.path.dirname(__file__))
-    database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
+    # Build a sample db on the fly, if one does not exist yet.
+    app_dir = op.realpath(os.path.dirname(__file__))
+    database_path = op.join(app_dir, app.config['DATABASE_FILE'])
     if not os.path.exists(database_path):
         build_sample_db()
 
+    # Start app
     app.run(debug=True)
