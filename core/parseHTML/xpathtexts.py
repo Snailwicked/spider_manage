@@ -16,7 +16,6 @@ class xPathTexts(object):
         if headers== None:
             headers = random_headers
         try:
-            print(headers)
             resp = requests.get(url=url, headers=headers, cookies=cookies, timeout=30)
             reg = '<meta .*(http-equiv="?Content-Type"?.*)?charset="?([a-zA-Z0-9_-]+)"?'
             charset = re.findall(reg, resp.text)[0][1]
@@ -61,8 +60,9 @@ class xpathUrl(xPathTexts):
                     continue
 
 if __name__ == "__main__":
-    url = "http://world.people.com.cn/"
+    url = "http://world.people.com.cn/n1/2019/0716/c1002-31235646.html"
     xpt = xpathUrl()
+    xpt.get_contents()
     hrefs = xpt.getUrls(url=url)
     # import requests
     for href in hrefs:
