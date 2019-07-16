@@ -2,7 +2,7 @@
 import requests,re
 from lxml import etree
 from urllib.parse import urljoin
-from core.parseHTML.headers import headers
+from core.parseHTML.headers import random_headers
 
 class xPathTexts(object):
     def __init__(self, *args,**kwargs):
@@ -13,7 +13,10 @@ class xPathTexts(object):
         获取self.url 的 html
         :return: html
         '''
+        if headers== None:
+            headers = random_headers
         try:
+            print(headers)
             resp = requests.get(url=url, headers=headers, cookies=cookies, timeout=30)
             reg = '<meta .*(http-equiv="?Content-Type"?.*)?charset="?([a-zA-Z0-9_-]+)"?'
             charset = re.findall(reg, resp.text)[0][1]
@@ -40,13 +43,13 @@ class xpathUrl(xPathTexts):
         super(xpathUrl, self).__init__()
         self.urls = None
 
-    def getUrls(self,url =None,html = None,header=None):
+    def getUrls(self,url =None,html = None,headers=None):
         X_path = "//a//@href"
         data = set()
         if html!= None:
-            self.urls = self.get_contents(X_path=X_path, html=html, headers=header)
+            self.urls = self.get_contents(X_path=X_path, html=html, headers=headers)
         else:
-            self.urls = self.get_contents(url=url, X_path=X_path, headers=header)
+            self.urls = self.get_contents(url=url, X_path=X_path, headers=headers)
 
         for item in self.urls:
             url = urljoin(url, item)
@@ -58,9 +61,9 @@ class xpathUrl(xPathTexts):
                     continue
 
 if __name__ == "__main__":
-    url = "http://shipin.people.com.cn/n1/2018/0425/c85914-29948123.html"
+    url = "http://world.people.com.cn/"
     xpt = xpathUrl()
-    hrefs = xpt.getUrls(url=url, header=headers)
+    hrefs = xpt.getUrls(url=url)
     # import requests
     for href in hrefs:
         print(href)
