@@ -32,6 +32,7 @@ class xPathTexts(object):
             self.html = self.getHtml(url,headers,cookies)
 
         contens = []
+        print(X_path)
         for item in etree.HTML(str(self.html)).xpath(X_path):
             contens.append(str(item).strip())
         return contens
