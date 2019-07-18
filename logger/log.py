@@ -59,11 +59,13 @@ log_config = {
 log_conf.dictConfig(log_config)
 
 spider = logging.getLogger('spider')
+other = logging.getLogger('other')
+
 web = logging.getLogger('web')
 task = logging.getLogger('task')
 xpath = logging.getLogger('xpath')
 
 
-__all__ = ['spider', 'web', 'task', 'xpath']
+__all__ = ['spider', 'web', 'task', 'xpath','other']
 
 
