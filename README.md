@@ -14,6 +14,13 @@
     qq群：796732027
 
 
+## celery
+
+        在运行项目之前，需启动任务队列，目前只有一个xpath解析a标签的任务，启动代码如下：
+        celery -A tasks.workers.app worker -l info -P eventlet
+        
+
+
 ## 相关技术
 
 - flask
