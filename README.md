@@ -17,6 +17,6 @@
 ## 相关技术
 
 - flask
-- sqlite
-- asyncio
-- layui
+- mysql
+- redis
+- celey
