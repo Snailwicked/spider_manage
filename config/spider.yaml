@@ -35,20 +35,28 @@ cookie_expire_time: 23
 
 
 
+#db:
+#    host: 127.0.0.1
+#    port: 3306
+#    user: root
+#    password: 123456
+#    db_name: weibo
+#    db_type: mysql
+
+
 db:
-    host: 127.0.0.1
+    host: 101.132.113.50
     port: 3306
     user: root
-    password: 123456
-    db_name: weibo
+    password: BlueSnail123!
+    db_name: Japan
     db_type: mysql
 
 
-
 redis:
-    host: 1.1.1.1
+    host: 101.132.113.50
     port: 6379
-    password: abcd
+#    password: abcd
     cookies: 1                   # store and fetch cookies
     # store fetched urls and results,so you can decide whether retry to crawl the urls or not
     urls: 2
@@ -57,13 +65,6 @@ redis:
     id_name: 8                   # user id and names，for repost info analysis
     # expire_time (hours) for redis db2, if they are useless to you, you can set the value smaller
     expire_time: 48
-    sentinel:
-        - host: 2.2.2.2
-          port: 26379
-        - host: 3.3.3.3
-          port: 26379
-        - host: 4.4.4.4
-          port: 26380
     master: mymaster             # redis sentinel master name
     socket_timeout: 5               # sockt timeout for redis sentinel
 

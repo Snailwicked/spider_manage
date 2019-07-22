@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parameter ={
                         "author":"自己的名字，用于标识此网站是谁做的,以便后期结算",
                         "domain":"需要采集的网站地址,此地址只需要改变参数便可做到分页效果",
-                        "page":"采集的总页数(整数型)",
+                        "page":"1",
                         "good_list":"数据列表xpath路径",
                         "personnel_imgs":"图片链接的xpath路径",
                         "personnel_name":"人员名称的xpath路径",
@@ -79,3 +79,11 @@ if __name__ == '__main__':
     spider = spider_test()
     spider.set_parameter(parameter)
     spider.get_data()
+
+
+    '''
+    如果可以获取所需要的数据，请将参数提交到数据库
+    提交方法如下，没写验证，请勿重复提交
+    '''
+    # from db import xpath_info
+    # print(xpath_info.commit_data(parameter))
