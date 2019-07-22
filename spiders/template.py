@@ -30,7 +30,6 @@ json 数据格式
 
 from core.xpathtexts import xPathTexts
 from db.models import WebData
-# xxx 用网站域名代替
 
 class spider_test():
 
