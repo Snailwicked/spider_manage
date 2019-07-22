@@ -45,16 +45,16 @@ cookie_expire_time: 23
 
 
 db:
-    host: 101.132.113.50
+    host: 127.0.0.1
     port: 3306
     user: root
-    password: BlueSnail123!
-    db_name: Japan
+    password: xxxxx
+    db_name: xxxxx
     db_type: mysql
 
 
 redis:
-    host: 101.132.113.50
+    host: 127.0.0.1
     port: 6379
 #    password: abcd
     cookies: 1                   # store and fetch cookies
