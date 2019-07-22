@@ -20,9 +20,12 @@ class xPathTexts(object):
         try:
             resp = requests.get(url=self.url, headers=self.headers, cookies=self.cookies , timeout=30)
             reg = '<meta .*(http-equiv="?Content-Type"?.*)?charset="?([a-zA-Z0-9_-]+)"?'
-            charset = re.findall(reg, resp.text)[0][1]
-            charset = charset.lower()
-            resp.encoding = charset
+            try:
+                charset = re.findall(reg, resp.text)[0][1]
+                charset = charset.lower()
+                resp.encoding = charset
+            except:
+                resp.encoding = "utf-8"
             return resp.text
         except Exception as e:
             print(e)
@@ -41,5 +44,5 @@ class xPathTexts(object):
 
 if __name__ == '__main__':
     xpath = xPathTexts()
-    xpath.set_parameter(url = "https://me.csdn.net/u014655053")
-    print(xpath.get_contents("//a/@href"))
+    xpath.set_parameter(url = "http://search.360kad.com/?pageText=%E5%96%B7%E9%9B%BE%E5%89%82&pageIndex=1")
+    print(xpath.get_contents("//p[@class= 't']//a//@href"))
