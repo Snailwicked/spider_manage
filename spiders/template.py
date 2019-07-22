@@ -42,14 +42,15 @@ class spider_test():
 
     #获取所有分页链接
     def get_urls(self):
-        for item in range(int(self.parameter.get("page"))):
-            yield self.parameter.get("domain").format(item)
+        for url in range(1,int(self.parameter.get("page"))):
+            self.xpath.set_parameter(url=url)
+            for item in self.xpath.get_contents(self.parameter.get("good_list")):
+                yield item
 
     def get_data(self):
         for url in self.get_urls():
             self.xpath.set_parameter(url=url)
             self.webdata.url = url
-            self.webdata.personnel_imgs = self.xpath.get_contents(self.parameter.get("personnel_imgs"))
             self.webdata.personnel_name = self.xpath.get_contents(self.parameter.get("personnel_name"))
             self.webdata.personnel_age = self.xpath.get_contents(self.parameter.get("personnel_age"))
             self.webdata.personnel_height = self.xpath.get_contents(self.parameter.get("personnel_height"))
@@ -64,9 +65,9 @@ class spider_test():
 if __name__ == '__main__':
     parameter ={
                         "author":"自己的名字，用于标识此网站是谁做的,以便后期结算",
-                        "domain":"需要采集的网站地址,此地址只需要改变参数便可做到分页效果",
-                        "page":"1",
-                        "good_list":"数据列表xpath路径",
+                        "domain":"http://search.360kad.com/?pageText=%E5%96%B7%E9%9B%BE%E5%89%82&pageIndex={}",
+                        "page":"10",
+                        "good_list":"//div[@class= 'plist_li']//div//p[@class='t']//a//@herf",
                         "personnel_imgs":"图片链接的xpath路径",
                         "personnel_name":"人员名称的xpath路径",
                         "personnel_age":"人员年龄的xpath路径",
@@ -78,7 +79,6 @@ if __name__ == '__main__':
     spider = spider_test()
     spider.set_parameter(parameter)
     spider.get_data()
-
 
     '''
     如果可以获取所需要的数据，请将参数提交到数据库
