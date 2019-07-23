@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import aiohttp
 import queue
-from core.parseHTML.headers import random_headers
+from core.headers import random_headers
 from lxml import etree
 
 class QueueUtil:
@@ -22,8 +22,14 @@ class QueueUtil:
                 time.sleep(5)
             yield self.queue.get()
 
-class Crawler:
+
+queue = QueueUtil()
+
+
+class Crawler():
+
     def __init__(self, maxtasks=100):
+        super(Crawler, self).__init__()
         self.rooturl = None
         self.loop = None
         self.todo = set()
@@ -50,29 +56,15 @@ class Crawler:
         yield from tas
         self.loop.stop()
 
-    @asyncio.coroutine
-    def checkdata(self):
-
-
-        pause = 1
-        # while pause:
-        #     import time
-        #     time.sleep(5)
-        #     end = len(self.dataset)
-        #     temp_bit  = start/end
-        #     print("----"*20,temp_bit)
-        #     if 1- temp_bit<0.001:
-        #         self.loop.stop()
-        #         pause = 0
-        #     else:
-        #         start = end
-
 
     @asyncio.coroutine
     def addurls(self, urls):
         for url, parenturl in urls:
-            url = urllib.parse.urljoin(parenturl, url)
-            url, frag = urllib.parse.urldefrag(url)
+            try:
+                url = urllib.parse.urljoin(parenturl, url)
+                url, frag = urllib.parse.urldefrag(url)
+            except:
+                pass
             if (url not in self.busy and
                     url not in self.done and
                     url not in self.todo):
@@ -107,14 +99,17 @@ class Crawler:
                 data = html.decode('utf-8', 'replace')
                 # urls = re.findall(r'(?i)href=["\']?([^\s"\'<>]+)', data)
                 # asyncio.Task(self.addurls([(u, url) for u in urls]))
-                for item in etree.HTML(str(data)).xpath("//a//@href"):
-                    suburl = urljoin(url, item)
-                    if suburl.startswith("http"):
-                        if suburl not in self.dataset:
-                            self.dataset.add(suburl)
-                            asyncio.ensure_future(self.addurls([(suburl, url)]),loop=self.loop)
-                        else:
-                            continue
+                try:
+                    for item in etree.HTML(str(data)).xpath("//a//@href"):
+                        suburl = urljoin(url, item)
+                        if suburl.startswith("http"):
+                            if suburl not in self.dataset:
+                                self.dataset.add(suburl)
+                                asyncio.ensure_future(self.addurls([(suburl, url)]),loop=self.loop)
+                            else:
+                                continue
+                except:
+                    pass
                 result = re.findall(self.re_Rule, url)
                 if result:
                     asyncio.ensure_future(self.response((url)), loop=self.loop)
@@ -134,7 +129,7 @@ class Crawleruning(Crawler):
 
     @asyncio.coroutine
     def response(self, item):
-        print(item)
+        queue.put(item)
 
 
     def main(self,loop):
@@ -154,13 +149,43 @@ class Crawleruning(Crawler):
         except:
             loop.close()
 
+    def stop(self):
+            self.loop.close()
+
+
+class check():
+
+    def __int__(self):
+        self.sign= 0
+        self.start = 1
+        self.end = 2
+
+    def chekc(self):
+        temp = 1
+        while temp:
+            self.start = queue.queue.qsize()
+            import time
+            time.sleep(5)
+            self.end = queue.queue.qsize()
+            bit = 1 - self.start / self.end
+            print(bit)
+            if bit<0.1:
+                self.sign = 1
+                temp = 0
+            else:
+                self.start = self.end
 
 if __name__ == '__main__':
     import time
     start = time.time()
     crawler = Crawleruning()
     crawler.start()
-    # data = "http://www.sohu.com/a/327299148_359980?scm=1002.590044.0.28b5-4ab"
+
+    #
+    # check = check()
+    # check.chekc()
+
+# data = "http://www.sohu.com/a/327299148_359980?scm=1002.590044.0.28b5-4ab"
     # re_Rule = "http://www.sohu.com/a/\d+_\d+"
     #
     # urls = re.findall(re_Rule, data)
