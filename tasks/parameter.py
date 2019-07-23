@@ -6,9 +6,9 @@ from db import task_info
 
 @app.task(ignore_result=True)
 def parameter_task(task_name):
-    parameter =  xpath_info.get_xpath_info(task_name)
+    parameter =  task_info.get_xpath_info(task_name)
     crawler = Crawleruning()
-    crawler.set_parameter(parameter)
+    crawler.set_parameters(parameter)
     crawler.start()
 
 
