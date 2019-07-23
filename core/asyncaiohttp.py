@@ -8,29 +8,12 @@ import queue
 from core.headers import random_headers
 from lxml import etree
 
-class QueueUtil:
-    def __init__(self):
-        self.queue = queue.Queue()
-
-    def put(self, data):
-        self.queue.put(data)
-
-    def get(self):
-        while not self.queue.empty():
-            if self.queue.qsize() < 10:
-                import time
-                time.sleep(5)
-            yield self.queue.get()
-
-
-queue = QueueUtil()
-
 
 class Crawler():
 
     def __init__(self, maxtasks=100):
         super(Crawler, self).__init__()
-        self.rooturl = None
+        self.parameters = None
         self.loop = None
         self.todo = set()
         self.busy = set()
@@ -44,8 +27,8 @@ class Crawler():
 
     @asyncio.coroutine
     def run(self):
-        for url in self.rooturl:
-            t = asyncio.ensure_future(self.addurls([(url, '')]),
+        for parameter in self.parameters:
+            t = asyncio.ensure_future(self.parse_urls(parameter),
                                   loop=self.loop)
         tas = []
         tas.append(t)
@@ -57,31 +40,46 @@ class Crawler():
         self.loop.stop()
 
 
+
+
     @asyncio.coroutine
-    def addurls(self, urls):
-        for url, parenturl in urls:
-            try:
-                url = urllib.parse.urljoin(parenturl, url)
-                url, frag = urllib.parse.urldefrag(url)
-            except:
-                pass
+    def addurls(self,parameter, temp):
+        for url in temp:
             if (url not in self.busy and
                     url not in self.done and
                     url not in self.todo):
                 self.todo.add(url)
                 yield from self.sem.acquire()
-                task = asyncio.ensure_future(self.process(url), loop=self.loop)
+                task = asyncio.ensure_future(self.process(url,parameter), loop=self.loop)
                 task.add_done_callback(lambda t: self.sem.release())
                 task.add_done_callback(self.tasks.remove)
                 self.tasks.add(task)
 
     @asyncio.coroutine
-    def response(self, item):
-        pass
+    def parse_urls(self, parameter):
+        temp = []
+        for item in range(1, int(parameter.get("page"))):
+            tem_url = parameter.get("domain").format(item)
+            temp.append(("list", tem_url))
+        asyncio.ensure_future(self.addurls(parameter, temp), loop=self.loop)
+
 
     @asyncio.coroutine
-    def process(self, url):
+    def process_urls(self ,html,parameter):
+        temp = []
+        for item in etree.HTML(str(html)).xpath(parameter.get("good_list")):
+            temp.append(("detail",item))
+            asyncio.ensure_future(self.addurls(parameter, temp), loop=self.loop)
 
+    @asyncio.coroutine
+    def process_data(self, url, html, parameter):
+        title = etree.HTML(str(html)).xpath(parameter.get("personnel_age"))[0]
+        print(url,title)
+
+
+
+    @asyncio.coroutine
+    def process(self, url,parameter):
         self.todo.remove(url)
         self.busy.add(url)
         try:
@@ -89,37 +87,20 @@ class Crawler():
             import random
             pause_time = random.randint(1, 3)
             asyncio.sleep(pause_time)
-            resp = yield from self.session.get(url,headers=random_headers)
+            resp = yield from self.session.get(url[1],headers=random_headers)
         except:
-            asyncio.ensure_future(self.addurls([(url, url)]), loop=self.loop)
             self.done[url] = False
         else:
             if (resp.status == 200):
                 html = (yield from resp.read())
                 data = html.decode('utf-8', 'replace')
-                # urls = re.findall(r'(?i)href=["\']?([^\s"\'<>]+)', data)
-                # asyncio.Task(self.addurls([(u, url) for u in urls]))
-                try:
-                    for item in etree.HTML(str(data)).xpath("//a//@href"):
-                        suburl = urljoin(url, item)
-                        if suburl.startswith("http"):
-                            if suburl not in self.dataset:
-                                self.dataset.add(suburl)
-                                asyncio.ensure_future(self.addurls([(suburl, url)]),loop=self.loop)
-                            else:
-                                continue
-                except:
-                    pass
-                result = re.findall(self.re_Rule, url)
-                if result:
-                    asyncio.ensure_future(self.response((url)), loop=self.loop)
-                else:
-                    pass
+                if url[0] == "list":
+                    asyncio.ensure_future(self.process_urls(data,parameter), loop=self.loop)
+                elif url[0] == "detail":
+                    asyncio.ensure_future(self.process_data(url[1],data,parameter), loop=self.loop)
             resp.close()
             self.done[url] = True
         self.busy.remove(url)
-        print(len(self.done), 'completed tasks,', len(self.tasks),
-              'still pending, todo', len(self.todo))
 
 
 class Crawleruning(Crawler):
@@ -127,20 +108,12 @@ class Crawleruning(Crawler):
     def __init__(self):
         super(Crawleruning, self).__init__()
 
-    @asyncio.coroutine
-    def response(self, item):
-        queue.put(item)
-
-
     def main(self,loop):
-        self.rooturl = ['http://news.sohu.com/']
-        self.re_Rule = "http://www.sohu.com/a/\d+_\d+"
         self.loop = loop
         tasks = asyncio.gather(  # gather() 可以将一些 future 和协程封装成一个 future
                 asyncio.ensure_future(self.run(), loop=loop),
             )
         return tasks
-
 
     def start(self):
         loop = asyncio.get_event_loop()
@@ -149,36 +122,20 @@ class Crawleruning(Crawler):
         except:
             loop.close()
 
-    def stop(self):
-            self.loop.close()
-
-
-class check():
-
-    def __int__(self):
-        self.sign= 0
-        self.start = 1
-        self.end = 2
-
-    def chekc(self):
-        temp = 1
-        while temp:
-            self.start = queue.queue.qsize()
-            import time
-            time.sleep(5)
-            self.end = queue.queue.qsize()
-            bit = 1 - self.start / self.end
-            print(bit)
-            if bit<0.1:
-                self.sign = 1
-                temp = 0
-            else:
-                self.start = self.end
+    def set_parameters(self,parameters):
+        self.parameters = parameters
 
 if __name__ == '__main__':
     import time
-    start = time.time()
+
+    parameters = [{'personnel_sanwei': '//h1//text() ', 'page': 10, 'personnel_name': '//h1//text()',
+      'attendance_time': '//h1//text()', 'good_list': "//p[@class= 't']//a//@href",
+      'domain': 'http://search.360kad.com/?pageText=%E9%A2%97%E7%B2%92&pageIndex={}',
+      'personnel_age': '//h1//text()', 'personnel_height': '//h1//text()', 'personnel_imgs': '//h1//text()',
+      'comment': '///h1//text()', 'author': 'snail'}]
+
     crawler = Crawleruning()
+    crawler.set_parameters(parameters)
     crawler.start()
 
     #
