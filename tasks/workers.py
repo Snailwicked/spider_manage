@@ -6,7 +6,7 @@ from config.conf import get_broker_and_backend
 platforms.C_FORCE_ROOT = True
 broker, backend = get_broker_and_backend()
 #
-tasks = ['tasks.xpath']
+tasks = ['tasks.xpath',"tasks.gethtml"]
 
 app = Celery('spider_task', include=tasks, broker=broker, backend=backend)
 
@@ -22,13 +22,21 @@ app.conf.update(
                 'queue': 'xpath_queue',
                 'routing_key': 'xpath_queue'
             },
+
+        'tasks.gethtml.excute_xpath_task':
+            {
+                'queue': 'gethtml_queue',
+                'routing_key': 'gethtml_queue'
+            },
+
+
     },
 
     CELERY_QUEUES={
-        "xpath_queue": {
-            "exchange": "xpath_queue",
+        "gethtml_queue": {
+            "exchange": "gethtml_queue",
             "exchange_type": "direct",
-            "routing_key": "xpath_queue"
+            "routing_key": "gethtml_queue"
         }
     }
 
