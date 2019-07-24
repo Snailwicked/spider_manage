@@ -4,7 +4,6 @@ import urllib.parse
 from urllib.parse import urljoin
 
 import aiohttp
-import queue
 from core.headers import random_headers
 from lxml import etree
 
@@ -40,8 +39,6 @@ class Crawler():
         self.loop.stop()
 
 
-
-
     @asyncio.coroutine
     def addurls(self,parameter, temp):
         for url in temp:
@@ -73,9 +70,13 @@ class Crawler():
 
     @asyncio.coroutine
     def process_data(self, url, html, parameter):
-        title = etree.HTML(str(html)).xpath(parameter.get("personnel_age"))[0]
-        print(url,title)
+        data = {}
+        data["url"]= url
 
+        for key ,value in parameter.get("content_xpath").items():
+            value = etree.HTML(str(html)).xpath(value)[0]
+            data[key] = value
+        print(data)
 
 
     @asyncio.coroutine
@@ -128,26 +129,32 @@ class Crawleruning(Crawler):
 if __name__ == '__main__':
     import time
 
-    parameters = [{'personnel_sanwei': '//h1//text() ', 'page': 10, 'personnel_name': '//h1//text()',
-      'attendance_time': '//h1//text()', 'good_list': "//p[@class= 't']//a//@href",
-      'domain': 'http://search.360kad.com/?pageText=%E9%A2%97%E7%B2%92&pageIndex={}',
-      'personnel_age': '//h1//text()', 'personnel_height': '//h1//text()', 'personnel_imgs': '//h1//text()',
-      'comment': '///h1//text()', 'author': 'snail'}]
-
+    parameters = [
+        {
+          'page': 10,
+          'good_list': "//p[@class= 't']//a//@href",
+          'domain': 'http://search.360kad.com/?pageText=%E9%A2%97%E7%B2%92&pageIndex={}',
+          "content_xpath":{
+              'personnel_title': '//h1//text()',
+          },
+          'author': 'snail'},
+        {
+            'page': 10,
+            'good_list': "//ul[@id= 'newsListContent']//li//p[@class='title']//a//@href",
+            'domain': 'http://stock.eastmoney.com/a/cdpfx_{}.html',
+            "content_xpath": {
+                'personnel_title': '//h1//text()',
+                'attendance_time': '//div[@class="time"]//text()',
+            },
+            'author': 'snail'}
+    ]
+    import time
     crawler = Crawleruning()
     crawler.set_parameters(parameters)
+    start = time.time()
     crawler.start()
-
-    #
-    # check = check()
-    # check.chekc()
-
-# data = "http://www.sohu.com/a/327299148_359980?scm=1002.590044.0.28b5-4ab"
-    # re_Rule = "http://www.sohu.com/a/\d+_\d+"
-    #
-    # urls = re.findall(re_Rule, data)
-    # print(urls)
-
+    end = time.time()
+    print("采集"+str(len(crawler.done))+"个网站用时"+str(end-start)+"秒")
 
 
 
