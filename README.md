@@ -19,7 +19,9 @@
         在运行项目之前，需启动任务队列，目前只有一个xpath解析a标签的任务，启动代码如下：
         celery -A tasks.workers.app worker -l info -P eventlet
         
-
+## 项目展示
+先放一张图片
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/weblist.png)
 
 ## 相关技术
 
