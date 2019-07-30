@@ -41,32 +41,25 @@ class spider_test():
     def get_urls(self):
         for url in range(1,int(self.parameter.get("page"))):
             tem_url = self.parameter.get("domain").format(url)
-            print("正在采集第{}页".format(url))
+            print("正在采集第{}页".format(url),tem_url)
             xpath.set_parameter(url= tem_url)
-            for item in xpath.get_contents(self.parameter.get("good_list")):
-                yield item
+            print(xpath.getHtml())
+            # for item in xpath.get_contents(self.parameter.get("good_list")):
+            #     yield item
 
     def get_data(self):
         for url in self.get_urls():
             xpath.set_parameter(url=url)
-            webdata.url = url
-            webdata.personnel_name = xpath.get_contents(self.parameter.get("personnel_name"))[0]
-            webdata.personnel_imgs = xpath.get_contents(self.parameter.get("personnel_imgs"))[0]
+            print(url)
 
-            webdata.personnel_age = xpath.get_contents(self.parameter.get("personnel_age"))[0]
-            webdata.personnel_height = xpath.get_contents(self.parameter.get("personnel_height"))[0]
-            webdata.personnel_sanwei = xpath.get_contents(self.parameter.get("personnel_sanwei"))[0]
-            webdata.attendance_time = xpath.get_contents(self.parameter.get("attendance_time"))[0]
-            webdata.comment = xpath.get_contents(self.parameter.get("comment"))[0]
-            print(webdata.get_json())
 
 
 
 if __name__ == '__main__':
     parameter ={
                         "author":"snail",
-                        "domain":"http://search.360kad.com/?pageText=%E5%96%B7%E9%9B%BE%E5%89%82&pageIndex={}",
-                        "page":"10",
+                        "domain":"http://fund.eastmoney.com/data/FundDataPortfolio_Interface.aspx?dt=1&t=2019_2&hydm=C&pi={}&pn=50&mc=returnJson&st=desc&sc=SZ",
+                        "page":10,
                         "good_list":"//p[@class= 't']//a//@href",
                         "personnel_imgs":"//h1//text()",
                         "personnel_name":"//h1//text()",

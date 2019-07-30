@@ -18,9 +18,23 @@ xpath_info = Table("xpath_info", metadata,
                    Column("personnel_height", String(100), default='', server_default=''),
                    Column("attendance_time", String(100), default='', server_default=''),
                    Column("personnel_sanwei", String(100), default='', server_default=''),
-                   )
+            )
 
 
+task_info = Table("task_info", metadata,
+                   Column("id", INTEGER, primary_key=True, autoincrement=True),
+                   Column("domain",  String(100) ,default='', server_default=''),
+                   Column("author", String(100), default='', server_default=''),
+                   Column("page", INTEGER, default=10, server_default='10'),
+                   Column("good_list",  String(100) ,default='', server_default=''),
+                   Column("personnel_imgs", String(100), default='', server_default=''),
+                   Column("personnel_age", String(100), default='', server_default=''),
+                   Column("personnel_name", String(100), default='', server_default=''),
+                   Column("comment", String(100), default='', server_default=''),
+                   Column("personnel_height", String(100), default='', server_default=''),
+                   Column("attendance_time", String(100), default='', server_default=''),
+                   Column("personnel_sanwei", String(100), default='', server_default=''),
+            )
 
 
 # {
@@ -36,4 +50,4 @@ xpath_info = Table("xpath_info", metadata,
 #     "attendance_time":"出勤时间的xpath路径",
 #     "comment":"评论的xpath路径"
 # }
-__all__ = ['xpath_info']
+__all__ = ['xpath_info','task_info']

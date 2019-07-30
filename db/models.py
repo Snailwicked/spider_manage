@@ -6,9 +6,18 @@ from db.tables import *
 
 class XpathInfo(Base):
     __table__ = xpath_info
+    def json(self):
+        return {"author":self.author,"domain":self.domain,"page":self.page,"good_list":self.good_list,
+                    "personnel_imgs":self.personnel_imgs,"personnel_name":self.personnel_name,"personnel_age":self.personnel_age,
+                        "personnel_height":self.personnel_height,"personnel_sanwei":self.personnel_sanwei,"attendance_time":self.attendance_time,"comment":self.comment}
 
 
-
+class TaskInfo(Base):
+    __table__ = task_info
+    def json(self):
+        return {"author":self.author,"domain":self.domain,"page":self.page,"good_list":self.good_list,
+                    "personnel_imgs":self.personnel_imgs,"personnel_name":self.personnel_name,"personnel_age":self.personnel_age,
+                        "personnel_height":self.personnel_height,"personnel_sanwei":self.personnel_sanwei,"attendance_time":self.attendance_time,"comment":self.comment}
 '''
 {
     "author":"自己的名字，用于标识此网站是谁做的,以便后期结算",

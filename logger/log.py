@@ -3,7 +3,7 @@ import os
 import logging
 import logging.config as log_conf
 
-log_dir = os.path.dirname(os.path.dirname(__file__))+'./logs'
+log_dir = os.path.dirname(os.path.dirname(__file__))+'/logs'
 if not os.path.exists(log_dir):
     os.mkdir(log_dir)
 
@@ -58,14 +58,12 @@ log_config = {
 
 log_conf.dictConfig(log_config)
 
-spider = logging.getLogger('spider')
 other = logging.getLogger('other')
+crawler = logging.getLogger('crawler')
+parser = logging.getLogger('page_parser')
+storage = logging.getLogger('storage')
 
-web = logging.getLogger('web')
-task = logging.getLogger('task')
-xpath = logging.getLogger('xpath')
 
-
-__all__ = ['spider', 'web', 'task', 'xpath','other']
+__all__ = ['crawler', 'parser', 'other', 'storage']
 
 
