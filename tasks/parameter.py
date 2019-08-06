@@ -20,3 +20,9 @@ def excute_xpath_task():
         app.send_task('tasks.gethtml.parameter_task', args=(info.task_name), queue='task_queue',
                       routing_key='for_task')
 
+'''
+
+z 31.65
+  20.25
+
+'''

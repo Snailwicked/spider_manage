@@ -128,6 +128,10 @@ class Crawleruning(Crawler):
             loop.close()
 
 if __name__ == '__main__':
+    parameter = {
+        "url":"http://news.sohu.com/",
+        "re_Rule":"http://www.sohu.com/a/\d+_\d+"
+    }
     import time
     start = time.time()
     crawler = Crawleruning()
