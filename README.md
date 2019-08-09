@@ -23,6 +23,9 @@
 先放一张图片
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/weblist.png)
 
+再放一张图片
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/config.png)
+
 ## 相关技术
 
 - flask
