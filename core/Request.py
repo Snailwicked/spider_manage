@@ -13,6 +13,7 @@ from asyncio.locks import Semaphore
 
 try:
     import uvloop
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 except ImportError:
     pass
@@ -23,6 +24,12 @@ from ruia.utils import get_logger
 
 
 class Request(object):
+    """
+    Request class for each request
+    """
+
+    name = "Request"
+
     # Default config
     REQUEST_CONFIG = {
         "RETRIES": 3,

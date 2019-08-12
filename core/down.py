@@ -98,7 +98,7 @@ class AWebSpider:
         [temp.add(item) for item in dom.xpath('//a/@href')]
         for href in temp:
             if any(e in href for e in self.exclude):
-                    continue
+                continue
             url = unquote(urljoin(self.base, urldefrag(href)[0]))
             if self.capture.search(url):
                 urls_to_parse.append(url)
@@ -136,6 +136,7 @@ class AWebSpider:
                             break
 
                         if self.scheme in url:
+                            print(url)
                             if (url not in self.brief['crawled']) and (url not in self.brief['crawling']):
 
 
@@ -169,7 +170,8 @@ class AWebSpider:
         url_to_parse = await self.q_parse.get()
 
         try:
-            print(url_to_parse)
+            pass
+            # print(url_to_parse)
 
         except Exception:
             self.log.error('An error has occurred during parsing',
@@ -193,7 +195,6 @@ class AWebSpider:
             else:
                 break
         return
-
 
     async def run(self):
         start = time.time()
@@ -245,7 +246,7 @@ if __name__ == '__main__':
 
     base_url = 'http://www.sohu.com/'
     capture = 'http://www.sohu.com/a/\d+_\d+'
-    exclude = [':']
+    exclude = [":"]
     concurrency = 2
     max_crawl = 50
     max_parse = 50000
