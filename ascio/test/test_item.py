@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-"""
- Created by howie.hu at 2018/7/9.
-"""
 import asyncio
 
 from ascio.aspider import AttrField, Item, TextField
