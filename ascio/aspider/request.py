@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import async_timeout
 from inspect import iscoroutinefunction
 import chardet
 from ascio.aspider.utils import get_logger
@@ -50,11 +51,10 @@ class Request():
     @property
     def current_request_func(self):
         self.logger.info(f"<{self.method}: {self.url}>")
-        timeout = self.request_config.get('TIMEOUT', 10)
         if self.method == 'GET':
-            request_func = self.current_request_session.get(self.url, timeout=timeout,**self.kwargs)
+            request_func = self.current_request_session.get(self.url, **self.kwargs)
         else:
-            request_func = self.current_request_session.post(self.url,timeout=timeout,**self.kwargs)
+            request_func = self.current_request_session.post(self.url,**self.kwargs)
         return request_func
 
 
@@ -71,17 +71,18 @@ class Request():
         if self.request_config.get('DELAY', 0) > 0:
             await asyncio.sleep(self.request_config['DELAY'])
         try:
-            async with self.current_request_func as resp:
-                assert resp.status in [200, 201]
-                if self.res_type == 'bytes':
-                    data = await resp.read()
-                elif self.res_type == 'json':
-                    data = await resp.json()
-                else:
-                    content = await resp.read()
-                    charset = chardet.detect(content)
-                    data = content.decode(charset['encoding'])
-
+            timeout = self.request_config.get('TIMEOUT', 10)
+            async with async_timeout.timeout(timeout):
+                async with self.current_request_func as resp:
+                    assert resp.status in [200, 201]
+                    if self.res_type == 'bytes':
+                        data = await resp.read()
+                    elif self.res_type == 'json':
+                        data = await resp.json()
+                    else:
+                        content = await resp.read()
+                        charset = chardet.detect(content)
+                        data = content.decode(charset['encoding'])
         except Exception:
             self.logger.error(f"<Error: {self.url} {resp.status}>")
             data = None
@@ -102,11 +103,12 @@ class Request():
         res = await self.fetch()
         if self.callback is not None:
             if iscoroutinefunction(self.callback):
-                res = await self.callback(res)
+                callback_res = await self.callback(res)
             else:
-                res = self.callback(res)
-        return res
-
+                callback_res = self.callback(res)
+        else:
+            callback_res = None
+        return callback_res, res
 
 
     def __str__(self):
