@@ -1,15 +1,10 @@
 #!/usr/bin/env python
-"""
- Created by howie.hu at 2018/7/10.
-"""
+
 import asyncio
 import aiohttp
 
 from datetime import datetime
-from threading import Thread
 from types import AsyncGeneratorType
-
-from lxml import etree
 
 from ascio.aspider.request import Request
 from ascio.aspider.utils import get_logger
@@ -35,9 +30,8 @@ class Spider:
             raise ValueError("Spider must have a param named start_urls, eg: start_urls = ['https://www.github.com']")
         self.logger = get_logger(name=self.name)
         self.loop = loop or asyncio.get_event_loop()
+        self.sem = asyncio.Semaphore(getattr(self, 'concurrency', 3))
 
-    def e_html(self, html):
-        return etree.HTML(html)
 
     async def parse(self, res):
         raise NotImplementedError
@@ -46,13 +40,13 @@ class Spider:
         for url in self.start_urls:
             request_ins = Request(url=url,
                                   callback=self.parse,
-                                  extra_value=getattr(self, 'extra_value', None),
+                                  metadata=getattr(self, 'metadata', None),
                                   headers=getattr(self, 'headers', None),
                                   request_config=getattr(self, 'request_config'),
                                   request_session=getattr(self, 'request_session', None),
                                   res_type=getattr(self, 'res_type', 'text'),
                                   **getattr(self, 'kwargs', {}))
-            self.request_queue.put_nowait(request_ins.fetch_callback())
+            self.request_queue.put_nowait(request_ins.fetch_callback(self.sem))
         workers = [asyncio.ensure_future(self.start_worker()) for i in range(2)]
         await self.request_queue.join()
         for work in workers:
@@ -68,13 +62,16 @@ class Spider:
                     callback_res, res = task.result()
                     if isinstance(callback_res, AsyncGeneratorType):
                         async for each in callback_res:
-                            self.request_queue.put_nowait(each.fetch_callback())
-                    if res.html is None:
+                            self.request_queue.put_nowait(each.fetch_callback(self.sem))
+                    if res.body is None:
                         self.failed_counts += 1
                     else:
                         self.success_counts += 1
                 self.worker_tasks = []
             self.request_queue.task_done()
+
+    def make_request_from_url(self, url):
+        yield Request(url=url)
 
     @classmethod
     def start(cls):

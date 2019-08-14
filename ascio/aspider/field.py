@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+
 from lxml import etree
+
 
 class BaseField(object):
     """

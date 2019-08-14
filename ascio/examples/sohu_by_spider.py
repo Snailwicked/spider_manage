@@ -17,6 +17,7 @@ class HackerNewsSpider(Spider):
     async def parse(self, res):
         items = await HackerNewsItem.get_items(html=res.html)
         for item in items:
+            self.start_urls.append(item.url)
             print(item.url)
 
 

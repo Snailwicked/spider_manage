@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
- Created by howie.hu at 2018/7/9.
-"""
+
 from inspect import iscoroutinefunction
 
 from lxml import etree
@@ -38,12 +36,11 @@ class Item(metaclass=ItemMeta):
         if not html:
             request = Request(url, **kwargs)
             response = await request.fetch()
-            html = response.html
-        html = html
+            html = response.body
         return etree.HTML(html)
 
     @classmethod
-    async def get_item(cls, html='', url='', html_etree=None, **kwargs) -> object:
+    async def get_item(cls, *, html: str = '', url: str = '', html_etree: etree._Element = None, **kwargs) -> object:
         if html_etree is None:
             etree_result = await cls._get_html(html, url, **kwargs)
         else:
@@ -51,7 +48,7 @@ class Item(metaclass=ItemMeta):
         return await cls._parse_html(etree_result)
 
     @classmethod
-    async def get_items(cls, html='', url='', html_etree=None, **kwargs) -> list:
+    async def get_items(cls, *, html: str = '', url: str = '', html_etree: etree._Element = None, **kwargs) -> list:
         if html_etree is None:
             etree_result = await cls._get_html(html, url, **kwargs)
         else:
@@ -84,10 +81,8 @@ class Item(metaclass=ItemMeta):
                         value = await clean_method(value)
                     else:
                         value = clean_method(value)
-
                 setattr(item_ins, field_name, value)
                 item_ins.results[field_name] = value
-
         return item_ins
 
     def __str__(self):
