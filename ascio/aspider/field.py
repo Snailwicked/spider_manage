@@ -34,7 +34,6 @@ class TextField(BaseField):
         Use css_select or re_select to extract a field value
         :return:
         """
-        value = ''
         if self.css_select:
             value = html.cssselect(self.css_select)
         elif self.xpath_select:
@@ -44,13 +43,13 @@ class TextField(BaseField):
         if is_source:
             return value
         if isinstance(value, list) and len(value) == 1:
+            text = ''
             if isinstance(value[0], etree._Element):
-                text = ''
                 for node in value[0].itertext():
                     text += node.strip()
-                value = text
             if isinstance(value[0], str) or isinstance(value[0], etree._ElementUnicodeResult):
-                value = ''.join(value)
+                text = ''.join(value)
+            value = text
         if self.default is not None:
             value = value if value else self.default
         return value

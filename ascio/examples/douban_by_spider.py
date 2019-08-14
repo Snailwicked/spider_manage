@@ -1,5 +1,6 @@
 from ascio.aspider import AttrField, TextField, Item, Request, Spider
 from ascio.aspider.utils import get_random_user_agent
+# from ruia import  AttrField, TextField, Item, Request, Spider
 
 
 class DoubanItem(Item):

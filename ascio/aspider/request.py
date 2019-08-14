@@ -7,6 +7,7 @@ from inspect import iscoroutinefunction
 import aiohttp
 import async_timeout
 import chardet
+import pyppeteer
 
 try:
     import uvloop
@@ -37,6 +38,7 @@ class Request(object):
 
     def __init__(self, url: str, method: str = 'GET', *,
                  callback=None,
+                 load_js: bool = False,
                  metadata: dict = None,
                  request_config: dict = None,
                  request_session=None,
@@ -51,6 +53,7 @@ class Request(object):
             raise ValueError('%s method is not supported' % self.method)
 
         self.callback = callback
+        self.load_js = load_js
         self.metadata = metadata if metadata is not None else {}
         self.request_session = request_session
         if request_config is None:
@@ -81,39 +84,56 @@ class Request(object):
             self.close_request_session = True
         return self.request_session
 
-    async def fetch(self):
+    async def close(self):
+        if hasattr(self, "browser"):
+            await self.browser.close()
+        if self.close_request_session:
+            await self.request_session.close()
+
+    async def fetch(self) -> Response:
         if self.request_config.get('DELAY', 0) > 0:
             await asyncio.sleep(self.request_config['DELAY'])
         try:
             timeout = self.request_config.get('TIMEOUT', 10)
-            async with async_timeout.timeout(timeout):
-                async with self.current_request_func as resp:
-                    res_status = resp.status
-                    assert res_status in [200, 201]
-                    if self.res_type == 'bytes':
-                        data = await resp.read()
-                    elif self.res_type == 'json':
-                        data = await resp.json()
-                    else:
-                        content = await resp.read()
-                        charset = chardet.detect(content)
-                        data = content.decode(charset['encoding'])
-                    res_cookies, res_headers, res_history = resp.cookies, resp.headers, resp.history
-        except Exception as e:
-            self.logger.error(f"<Error: {self.url} {resp.status} {str(e)}>")
 
+            if self.load_js:
+                if not hasattr(self, "browser"):
+                    self.browser = await pyppeteer.launch(headless=True, args=['--no-sandbox'])
+                page = await  self.browser.newPage()
+                res = await page.goto(self.url, options={'timeout': int(timeout * 1000)})
+                data = await page.content()
+                res_cookies = await page.cookies()
+                res_headers = res.headers
+                res_history = None
+                res_status = res.status
+            else:
+                async with async_timeout.timeout(timeout):
+                    async with self.current_request_func as resp:
+                        res_status = resp.status
+                        assert res_status in [200, 201]
+                        if self.res_type == 'bytes':
+                            data = await resp.read()
+                        elif self.res_type == 'json':
+                            data = await resp.json()
+                        else:
+                            content = await resp.read()
+                            charset = chardet.detect(content)
+                            data = content.decode(charset['encoding'])
+                        res_cookies, res_headers, res_history = resp.cookies, resp.headers, resp.history
+        except Exception as e:
             res_headers = {}
             res_history = ()
             res_status = 0
             data, res_cookies = None, None
+            self.logger.error(f"<Error: {self.url} {res_status} {str(e)}>")
+
         if self.retry_times > 0 and data is None:
             retry_times = self.request_config.get('RETRIES', 3) - self.retry_times + 1
             self.logger.info(f'<Retry url: {self.url}>, Retry times: {retry_times}')
             self.retry_times -= 1
             return await self.fetch()
 
-        if self.close_request_session:
-            await self.request_session.close()
+        await self.close()
 
         response = Response(url=self.url,
                             body=data,
@@ -129,10 +149,14 @@ class Request(object):
         async with sem:
             res = await self.fetch()
         if self.callback is not None:
-            if iscoroutinefunction(self.callback):
-                callback_res = await self.callback(res)
-            else:
-                callback_res = self.callback(res)
+            try:
+                if iscoroutinefunction(self.callback):
+                    callback_res = await self.callback(res)
+                else:
+                    callback_res = self.callback(res)
+            except Exception as e:
+                self.logger.error(e)
+                callback_res = None
         else:
             callback_res = None
         return callback_res, res
