@@ -3,7 +3,8 @@
 import asyncio
 
 from inspect import iscoroutinefunction
-
+from types import AsyncGeneratorType
+from typing import Tuple
 import aiohttp
 import async_timeout
 import chardet
@@ -18,7 +19,6 @@ except ImportError:
 
 from ascio.aspider.response import Response
 from ascio.aspider.utils import get_logger
-from ascio.aspider.wrappers import SettingsWrapper
 
 
 class Request(object):
@@ -40,6 +40,7 @@ class Request(object):
                  callback=None,
                  load_js: bool = False,
                  metadata: dict = None,
+                 headers: dict = None,
                  request_config: dict = None,
                  request_session=None,
                  res_type: str = 'text',
@@ -54,6 +55,7 @@ class Request(object):
 
         self.callback = callback
         self.load_js = load_js
+        self.headers = headers
         self.metadata = metadata if metadata is not None else {}
         self.request_session = request_session
         if request_config is None:
@@ -72,9 +74,19 @@ class Request(object):
     def current_request_func(self):
         self.logger.info(f"<{self.method}: {self.url}>")
         if self.method == 'GET':
-            request_func = self.current_request_session.get(self.url, verify_ssl=False, **self.kwargs)
+            request_func = self.current_request_session.get(
+                self.url,
+                headers=self.headers,
+                verify_ssl=False,
+                **self.kwargs
+            )
         else:
-            request_func = self.current_request_session.post(self.url, verify_ssl=False, **self.kwargs)
+            request_func = self.current_request_session.post(
+                self.url,
+                headers=self.headers,
+                verify_ssl=False,
+                **self.kwargs
+            )
         return request_func
 
     @property
@@ -89,8 +101,9 @@ class Request(object):
             await self.browser.close()
         if self.close_request_session:
             await self.request_session.close()
+            self.request_session = None
 
-    async def fetch(self) -> Response:
+    async def fetch(self) -> Tuple[AsyncGeneratorType, Response]:
         if self.request_config.get('DELAY', 0) > 0:
             await asyncio.sleep(self.request_config['DELAY'])
         try:
@@ -136,7 +149,7 @@ class Request(object):
         await self.close()
 
         response = Response(url=self.url,
-                            body=data,
+                            html=data,
                             metadata=self.metadata,
                             res_type=self.res_type,
                             cookies=res_cookies,
@@ -152,6 +165,7 @@ class Request(object):
             try:
                 if iscoroutinefunction(self.callback):
                     callback_res = await self.callback(res)
+                    res.callback_result = callback_res
                 else:
                     callback_res = self.callback(res)
             except Exception as e:
