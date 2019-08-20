@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import asyncio
-
+from asyncio.locks import Semaphore
 from inspect import iscoroutinefunction
 from types import AsyncGeneratorType
 from typing import Tuple
@@ -158,7 +158,7 @@ class Request(object):
                             status=res_status)
         return response
 
-    async def fetch_callback(self, sem):
+    async def fetch_callback(self, sem: Semaphore = None) -> Tuple[AsyncGeneratorType, Response]:
         async with sem:
             res = await self.fetch()
         if self.callback is not None:

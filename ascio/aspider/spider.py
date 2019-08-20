@@ -8,6 +8,8 @@ from types import AsyncGeneratorType
 from inspect import isawaitable
 from ascio.aspider.middleware import Middleware
 from ascio.aspider.request import Request
+from ascio.aspider.response import Response
+
 from ascio.aspider.utils import get_logger
 from signal import SIGINT, SIGTERM
 
@@ -36,7 +38,7 @@ class Spider:
         self.sem = asyncio.Semaphore(getattr(self, 'concurrency', 3))
         self.middleware = middleware or Middleware()
 
-    async def parse(self, res):
+    async def parse(self, res: Response):
         raise NotImplementedError
 
     async def start_master(self):
@@ -143,7 +145,7 @@ class Spider:
                     self.logger.error('Middleware must be a coroutine function')
                     result = None
 
-    async def handle_request(self, request):
+    async def handle_request(self, request:Request):
         # request middleware
         await self._run_request_middleware(request)
         # make a request
