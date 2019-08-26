@@ -20,11 +20,17 @@
         celery -A tasks.workers.app worker -l info -P eventlet
         
 ## 项目展示
-先放一张图片
+网站列表
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/weblist.png)
 
-再放一张图片
+网址配置表
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/config.png)
+
+网站导入爬虫引擎
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/import.png)
+
+系统监控图
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/monitor.png)
 
 ## 相关技术
 
