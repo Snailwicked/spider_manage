@@ -45,21 +45,21 @@ cookie_expire_time: 23
 
 
 db:
-    host: 127.0.0.1
+    host: 101.132.113.50
     port: 3306
     user: root
-    password: xxxxx
-    db_name: xxxxx
+    password: BlueSnail123!
+    db_name: Japan
     db_type: mysql
 
 
 redis:
-    host: 127.0.0.1
+    host: 101.132.113.50
     port: 6379
 #    password: abcd
-    cookies: 1                   # store and fetch cookies
+    parameter: 1                   # store and fetch cookies
     # store fetched urls and results,so you can decide whether retry to crawl the urls or not
-    urls: 2
+    children: 2
     broker: 5                    # broker for celery
     backend: 6                   # backed for celery
     id_name: 8                   # user id and names，for repost info analysis
