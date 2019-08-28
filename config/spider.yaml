@@ -45,6 +45,8 @@ db:
 
 
 
+
+
 redis:
     host: 127.0.0.1
     port: 6379
@@ -71,4 +73,9 @@ email:
     to: xxxx@139.com      #bind 139 email,so your phone will receive the warning message
     subject: Warning Of Weibo Spider
     warning_info: Please find out the reason why the spider stops working
+
+
+logging:
+    log_dir : "/config"
+    log_name : "spider.log"
 
