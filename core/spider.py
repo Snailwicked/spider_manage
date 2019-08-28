@@ -6,11 +6,11 @@ from datetime import datetime
 from types import AsyncGeneratorType
 from types import AsyncGeneratorType
 from inspect import isawaitable
-from ascio.aspider.middleware import Middleware
-from ascio.aspider.request import Request
-from ascio.aspider.response import Response
+from core.middleware import Middleware
+from core.request import Request
+from core.response import Response
 
-from ascio.aspider.utils import get_logger
+from core.utils import get_logger
 from signal import SIGINT, SIGTERM
 
 try:

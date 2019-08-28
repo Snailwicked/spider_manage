@@ -28,7 +28,7 @@ json 数据格式
 }
 """
 
-from core.xpathtexts import xPathTexts
+from utils.base_utils.xpathtexts import xPathTexts
 from db.models import WebData
 xpath = xPathTexts()
 webdata = WebData()

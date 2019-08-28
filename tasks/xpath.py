@@ -1,14 +1,13 @@
 # coding:utf-8
-import time
 
 from logger import log
-from core import xpathtexts
+from utils.base_utils import xpathtexts
 from tasks.workers import app
 from db import xpath_info
 
 @app.task(ignore_result=True)
 def spider_task(main_url, xpath):
-    xpathtexts.get_content(main_url,xpath)
+    xpathtexts.get_content(main_url, xpath)
 
 
 @app.task(ignore_result=True)

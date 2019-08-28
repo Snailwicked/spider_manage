@@ -1,7 +1,5 @@
 import time
 import logging
-import json
-import csv
 import re
 import asyncio
 import aiohttp
@@ -250,7 +248,7 @@ if __name__ == '__main__':
     concurrency = 2
     max_crawl = 50
     max_parse = 50000
-    from core.headers import random_headers
+    from utils.base_utils.headers import random_headers
     web_crawler = AWebSpider(base_url, capture, concurrency, timeout=60,
                               verbose=True, headers=random_headers, exclude=exclude,
                               max_crawl=max_crawl, max_parse=max_parse)

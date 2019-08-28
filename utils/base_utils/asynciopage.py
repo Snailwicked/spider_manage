@@ -1,7 +1,7 @@
 import asyncio
 
 import aiohttp
-from core.headers import random_headers
+from utils.base_utils.headers import random_headers
 from lxml import etree
 
 

@@ -1,8 +1,7 @@
 # -*-coding:utf-8 -*-
-from sqlalchemy import text
 from db.basic_db import db_session
 from db.models import XpathInfo
-from decorators.decorator import db_commit_decorator
+from utils.decorator import db_commit_decorator
 
 
 def get_xpath_info():

@@ -4,8 +4,9 @@ from inspect import iscoroutinefunction
 
 from lxml import etree
 from typing import Any
-from ascio.aspider.field import BaseField
-from ascio.aspider.request import Request
+
+from core.field import BaseField
+from core.request import Request
 
 
 class ItemMeta(type):

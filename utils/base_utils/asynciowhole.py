@@ -4,7 +4,7 @@ import urllib.parse
 import aiohttp
 from lxml import etree
 from urllib.parse import urljoin
-from core.headers import random_headers
+from utils.base_utils.headers import random_headers
 
 
 
