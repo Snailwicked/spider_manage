@@ -29,12 +29,12 @@
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/config.png)
 
 ### 爬虫列表
-        在爬虫列表中你可以新建一个数据采集引擎，新建的数据采集引擎为空，只需要导入网址列表中配置好的网站便可启动数据采集引擎，
-    启动的数据采集引擎将目标网址存入任务队列，后台从任务队列中获取任务进而解析数据保存到数据库中，你也可以通过配置信息指定
-    数据采集任务由哪台服务器执行，系统默认本机运行解析代码。
+        在爬虫列表中你可以新建一个数据采集引擎，新建的采集引擎为空，只需要导入网址列表中配置好的网站便可启动采集引擎，启动的采集
+    引擎将目标网址存入任务队列，后台从任务队列中获取任务进而解析数据保存到数据库中，你也可以通过配置信息指定数据采集任务由哪台服
+    务器执行，系统默认本机运行解析代码。
     
         引擎启动之后，引擎状态随之改变，结束之后恢复状态，你也可以手动终止任务，重启任务，或定时采集该爬虫引擎，引擎中含有采集
-    任务无法删除引擎，如许销毁引擎，提前移除引擎内采集任务即可。
+    任务无法删除引擎，如需销毁引擎，提前移除引擎内采集任务即可。
 
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/spider_engine.png)
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/import.png)
