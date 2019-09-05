@@ -6,10 +6,9 @@ from config.conf import get_broker_and_backend
 platforms.C_FORCE_ROOT = True
 broker, backend = get_broker_and_backend()
 #
-tasks = ['tasks.xpath',"tasks.gethtml"]
+tasks = ['tasks.start_task']
 
 app = Celery('spider_task', include=tasks, broker=broker, backend=backend)
-
 app.conf.update(
     CELERY_TIMEZONE='Asia/Shanghai',
     CELERY_ENABLE_UTC=True,
@@ -17,27 +16,32 @@ app.conf.update(
     CELERY_TASK_SERIALIZER='json',
     CELERY_RESULT_SERIALIZER='json',
     CELERY_ROUTES={
-        'tasks.xpath.excute_xpath_task':
+        'tasks.start_task.excute_start_crawler':
             {
-                'queue': 'xpath_queue',
-                'routing_key': 'xpath_queue'
+                'queue': 'crawler_queue',
+                'routing_key': 'crawler_queue'
             },
 
-        'tasks.gethtml.excute_xpath_task':
+        'tasks.start_task.excute_parse_url':
             {
-                'queue': 'gethtml_queue',
-                'routing_key': 'gethtml_queue'
+                'queue': 'parse_queue',
+                'routing_key': 'parse_queue'
             },
-
 
     },
 
     CELERY_QUEUES={
-        "gethtml_queue": {
-            "exchange": "gethtml_queue",
+        "crawler_queue": {
+            "exchange": "crawler_queue",
             "exchange_type": "direct",
-            "routing_key": "gethtml_queue"
-        }
+            "routing_key": "crawler_queue"
+        },
+        "parse_queue": {
+            "exchange": "parse_queue",
+            "exchange_type": "direct",
+            "routing_key": "parse_queue"
+        },
+
     }
 
 )
