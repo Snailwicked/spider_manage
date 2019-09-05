@@ -23,15 +23,26 @@
 网站列表
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/weblist.png)
 
-网址配置表
+配置信息
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/config.png)
 
-网站导入爬虫引擎
+
+数据采集引擎
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/spider_engine.png)
+
+
+网站导入数据采集引擎
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/import.png)
 
 系统监控图
 ![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/monitor.png)
 
+
+数据展示列表
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/newslist.png)
+
+详情数据图
+![Image text](https://raw.githubusercontent.com/Snailwicked/spider_manage/master/images/detailed.png)
 ## 相关技术
 
 - flask
